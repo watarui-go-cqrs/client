@@ -1,0 +1,14 @@
+services:
+  cqrsclinet:
+    container_name: cqrs-client
+    build: .
+    volumes:
+      - .:/go/src/client
+    ports:
+      - 8081:8081
+    networks:
+      - external
+networks:
+  external:
+    name: db_net
+    external: true
