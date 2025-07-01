@@ -43,6 +43,29 @@ func (h *QueryHelper) ProductList(ctx *gin.Context) {
 	}
 }
 
+func (h *QueryHelper) ProductListStream(ctx *gin.Context) {
+	param := &emptypb.Empty{}
+	stream, err := h.provider.Product.ListStream(ctx, param)
+	if err != nil {
+		ErrResp(ctx, err)
+		return
+	}
+
+	products := make([]*pb.Product, 0)
+	for {
+		product, err := stream.Recv()
+		if err != nil {
+			if err.Error() == "EOF" {
+				break
+			}
+			ErrResp(ctx, err)
+			return
+		}
+		products = append(products, product)
+	}
+	ctx.JSON(http.StatusOK, products)
+}
+
 func (h *QueryHelper) CategoryById(ctx *gin.Context) {
 	param := &pb.CategoryParam{Id: ctx.Param("id")}
 	if result, err := h.provider.Category.ById(ctx, param); err != nil {
